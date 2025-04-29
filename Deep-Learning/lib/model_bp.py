@@ -7,6 +7,7 @@ class Dense_Keras:
         self.output_activation = 'sigmoid'
         self.__parse_dict__(ml_data)
         self.__render_model__(units, activations)
+        self.__save_layers__(units, activations)
 
     def __parse_dict__(self, ml_data: dict):
         self.input_dims = int(ml_data.get('input_dims'))
@@ -22,6 +23,12 @@ class Dense_Keras:
         self.model.add(InputLayer(shape = (self.input_dims,)))
         [self.model.add(Dense(units = u, activation = a)) for u, a in zip(units, activations)]
         self.model.add(Dense(units = self.output_dims, activation = self.output_activation))
+        return self
+    
+    def __save_layers__(self, units, activations):
+        self.layers: list[tuple]
+        self.layers = [(u, a) for u, a in zip(units, activations)]
+        return self
 
     def summary(self):
         # Check the structure of the model

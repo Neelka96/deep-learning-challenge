@@ -1,4 +1,3 @@
-from .logger import init_log
 from .preprocess import Preprocessor
 from .model_bp import Dense_Keras
 

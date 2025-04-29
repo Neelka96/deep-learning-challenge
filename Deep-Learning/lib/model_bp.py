@@ -1,31 +1,38 @@
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import InputLayer, Dense
-import pandas as pd
-import numpy as np
 
 class Dense_Keras:
-    def __init__(self, hidden_layers: list[dict], **kwargs):
-        input_dims = int(kwargs.get('input_dims'))
-        output_dims = int(kwargs.get('output_dims'))
-        self.X_train_scaled = kwargs.get('X_train_scaled')
-        self.X_test_scaled = kwargs.get('X_test_scaled')
-        self.y_train = kwargs.get('y_train')
-        self.y_test = kwargs.get('y_test')
-        self.model = Sequential()
-        self.model.add(InputLayer(shape = (input_dims,)))
-        [self.model.add(Dense(units = layer.get('units'), activation = layer.get('activation'))) for layer in hidden_layers]
-        self.model.add(Dense(units = output_dims, activation = 'sigmoid'))
+    def __init__(self, ml_data: dict, units: list[int], activations: list[str]):
+        if len(units) != len(activations): raise ValueError('Lengths of layer units and activations must be equal. Exiting early.')
+        self.output_activation = 'sigmoid'
+        self.__parse_dict__(ml_data)
+        self.__render_model__(units, activations)
 
+    def __parse_dict__(self, ml_data: dict):
+        self.input_dims = int(ml_data.get('input_dims'))
+        self.output_dims = int(ml_data.get('output_dims'))
+        self.X_train_scaled = ml_data.get('X_train_scaled')
+        self.X_test_scaled = ml_data.get('X_test_scaled')
+        self.y_train = ml_data.get('y_train')
+        self.y_test = ml_data.get('y_test')
+        return self
+
+    def __render_model__(self, units, activations):
+        self.model = Sequential()
+        self.model.add(InputLayer(shape = (self.input_dims,)))
+        [self.model.add(Dense(units = u, activation = a)) for u, a in zip(units, activations)]
+        self.model.add(Dense(units = self.output_dims, activation = self.output_activation))
 
     def summary(self):
         # Check the structure of the model
         return self.model.summary()
     
-    def compile(self, **kwargs):
-        loss = kwargs.get('loss', 'binary_crossentropy')
-        opt = kwargs.get('optimizer', 'adam')
-        metrics = kwargs.get('metrics', 'accuracy')
-        
+    def compile(
+        self
+        ,loss = 'binary_crossentropy'
+        ,opt = 'adam'
+        ,metrics = 'accuracy'
+    ):
         if not isinstance(metrics, list): metrics = [metrics]
         
         self.model.compile(loss = loss, optimizer = opt, metrics = metrics)
@@ -34,8 +41,11 @@ class Dense_Keras:
     def train(self, epochs: int):
         self.model.fit(self.X_train_scaled, self.y_train, epochs = epochs)
         model_loss, model_accuracy = self.model.evaluate(self.X_test_scaled, self.y_test, verbose = 2)
-        print(f'Loss: {model_loss}, Accuracy: {model_accuracy}')
+        print(f'Accuracy: {model_accuracy}, Loss: {model_loss}')
         return self
+    
+    def params(self):
+        ...
 
     def export_model(self, path: str):
         self.model.save(path)

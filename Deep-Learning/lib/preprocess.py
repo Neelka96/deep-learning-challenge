@@ -108,6 +108,7 @@ class Preprocessor:
 
         # Convert all object columns into dummies and concat them
         # Create temporary df and list for categorical data
+        self.original_cols = self.df.columns
         category_df = self.df.select_dtypes(include = ['object'])
         categories = list(category_df.columns)
         self.df = pd.concat([self.df, pd.get_dummies(category_df)], axis = 1)
@@ -138,9 +139,12 @@ class Preprocessor:
         output_dims = io_dimensions(y_train)
 
         return {
-            'input_dims': input_dims
+            'original_columns': self.original_cols
+            ,'input_dims': input_dims
             ,'output_dims': output_dims
+            ,'X_train': X_train
             ,'X_train_scaled': X_train_scaled
+            ,'X_test': X_test
             ,'X_test_scaled': X_test_scaled
             ,'y_train': y_train
             ,'y_test': y_test

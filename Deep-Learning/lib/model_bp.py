@@ -1,5 +1,7 @@
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import InputLayer, Dense
+from tensorflow.keras.backend import clear_session
+import matplotlib.pyplot as plt
 
 class Dense_Keras:
     def __init__(self, ml_data: dict, units: list[int], activations: list[str]):
@@ -43,19 +45,30 @@ class Dense_Keras:
         if not isinstance(metrics, list): metrics = [metrics]
         
         self.model.compile(loss = loss, optimizer = opt, metrics = metrics)
-        return self
+        return None
     
-    def train(self, epochs: int):
-        self.model.fit(self.X_train_scaled, self.y_train, epochs = epochs)
-        model_loss, model_accuracy = self.model.evaluate(self.X_test_scaled, self.y_test, verbose = 2)
-        print(f'Accuracy: {model_accuracy}, Loss: {model_loss}')
-        return self
+    def train(self, epochs: int, verbosity = 0, **kwargs):
+        self.history = self.model.fit(self.X_train_scaled, self.y_train, epochs = epochs, verbose = verbosity, **kwargs)
+        model_loss, model_accuracy = self.model.evaluate(self.X_test_scaled, self.y_test, verbose = 0)
+        print(f'Accuracy: {round(model_accuracy * 100, 3)}%, Loss: {round(model_loss * 100, 3)}%, Epochs: {epochs}')
+        return None
     
-    def params(self):
-        ...
+    def plot_history(self):
+        plt.plot(self.history.history['loss'], label='loss')
+        plt.plot(self.history.history['accuracy'], label = 'accuracy')
+        plt.xlabel('Epoch')
+        plt.ylabel('Percent')
+        plt.title('Model History')
+        plt.legend()
+        plt.show()
+        return None
 
     def export_model(self, path: str):
         self.model.save(path)
+        return None
+    
+    def reset_keras(self):
+        clear_session()
         return None
 
 # EOF
